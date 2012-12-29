@@ -19,7 +19,7 @@ module Osu
         @score = ios.readint(4)
         @combo = ios.readint(2)
         @perfect = ios.readint(1) == 1
-        @mods = ios.readint(5)
+        @mods = Mods.new(ios.readint(5))
         @datetime = TimeUtil.ticks_to_time(ios.readint(8))
         @dummy = ios.readint(4)
         @scoreid = ios.readint(4)

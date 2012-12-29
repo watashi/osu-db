@@ -1,4 +1,5 @@
 require 'stringio'
+require 'osu-db/mods'
 
 module Osu
   module DB
