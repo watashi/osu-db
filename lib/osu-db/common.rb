@@ -56,7 +56,7 @@ module Osu
       EPOCH_TO_TICKS = 0 - Time.utc(1, 1, 1).to_i * TICKS_PER_SEC
 
       def self.ticks_to_time(ticks)
-        if ticks.instance_of? Numeric
+        if ticks.kind_of? Numeric
           Time.at(Rational(ticks - EPOCH_TO_TICKS, TICKS_PER_SEC))
         else
           ticks
@@ -64,7 +64,7 @@ module Osu
       end
 
       def self.time_to_ticks(time)
-        if time.instance_of? Numeric
+        if time.kind_of? Numeric
           time.to_i
         else
           EPOCH_TO_TICKS + (time.to_r * TICKS_PER_SEC).to_i

@@ -5,7 +5,7 @@ module Osu
     class Score
       attr_reader :flag, :beatmapcode, :user, :scorecode,
                   :x300, :x100, :x50, :geki, :katsu, :misses,
-                  :score, :combo, :mods, :datetime, :dummy, :scoreid
+                  :score, :combo, :perfect, :mods, :datetime, :dummy, :scoreid
 
       def load(ios)
         @flag = ios.readint(1)
@@ -18,7 +18,8 @@ module Osu
         @x300, @x100, @x50, @geki, @katsu, @misses = *ios.unpack(12, 'v6')
         @score = ios.readint(4)
         @combo = ios.readint(2)
-        @mods = ios.readint(6)
+        @perfect = ios.readint(1) == 1
+        @mods = ios.readint(5)
         @datetime = TimeUtil.ticks_to_time(ios.readint(8))
         @dummy = ios.readint(4)
         @scoreid = ios.readint(4)
