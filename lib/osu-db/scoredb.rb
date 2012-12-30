@@ -10,12 +10,12 @@ module Osu
         ios = StringIO.new(str, "rb")
         @scores = Hash.new{[]}
 
-        ios.version!
-        n = ios.readint(4)
+        ios.read_version
+        n = ios.read_int(4)
 
         n.times do
-          beatmapcode = ios.readstr
-          m = ios.readint(4)
+          beatmapcode = ios.read_str
+          m = ios.read_int(4)
           m.times do
             score = Score.new
             score.load(ios)

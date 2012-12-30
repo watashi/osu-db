@@ -1,5 +1,6 @@
 require 'stringio'
 require 'osu-db/mods'
+require 'osu-db/timeutil'
 
 module Osu
   module DB
@@ -9,66 +10,56 @@ module Osu
     class DBCorruptError < RuntimeError
     end
 
-
     class StringIO < ::StringIO
       def unpack(bytesize, format)
         read(bytesize).unpack(format)
       end
 
-      def readint(bytesize)
+      def read_int(bytesize)
         unpack(bytesize, "C#{bytesize}").reverse.inject{|h, l| h << 8 | l}
       end
 
-      def readstr
-        tag = read(1)
-        if tag != "\x0b"
-          raise DBCorruptError, "0x0b expected, got #{'0x%02x' % tag.ord}"
+      def read_bool
+        flag = read_int(1)
+        if flag == 0 || flag == 1
+          flag != 0
         else
-          len = readint(1)
+          raise DBCorruptError, "0x00 or 0x01 expected, got #{'0x%02x' % flag}"
+        end
+      end
+
+      def read_7bit_encoded_int
+        ret, off = 0, 0
+        loop do
+          byte = read_int(1)
+          ret |= byte << off
+          off += 7
+          break if byte & 0x80 == 0
+        end
+        ret
+      end
+
+      def read_str
+        tag = read_int(1)
+        if tag == 0
+          nil
+        elsif tag == 0x0b
+          len = read_7bit_encoded_int
           read(len)
+        else
+          raise DBCorruptError, "0x00 or 0x0b expected, got #{'0x%02x' % tag}"
         end
       end
 
-      VERSION_MIN = "\x89\x06\x33\x01".unpack('V')[0]
-      VERSION_MAX = "\x8D\x06\x33\x01".unpack('V')[0]
+      VERSION_MIN = 0x01330689
+      VERSION_MAX = 0x0133068D
 
-      def version!
-        version = readint(4)
-        unless (VERSION_MIN .. VERSION_MAX).include? version
+      def read_version
+        version = read_int(4)
+        if (VERSION_MIN .. VERSION_MAX).include? version
+          version
+        else
           raise UnsupportedVersionError, "version = #{'0x%08x' % version}"
-        end
-      end
-    end
-
-
-    # Conversion between System.DateTime.Ticks in .NET and Time in Ruby
-    # http://msdn.microsoft.com/en-us/library/system.datetime.ticks.aspx
-    # http://www.ruby-doc.org/core/Time.html
-    # http://en.wikipedia.org/wiki/System_time
-    module TimeUtil
-      # A single tick represents one hundred nanoseconds or one ten-millionth
-      # of a second.
-      TICKS_PER_SEC = 10 ** 7
-
-      # The value of DateTime.Ticks represents the number of 100-nanosecond
-      # intervals that have elapsed since 12:00:00 midnight, January 1, 0001,
-      # which represents DateTime.MinValue. It does not include the number of
-      # ticks that are attributable to leap seconds.
-      EPOCH_TO_TICKS = 0 - Time.utc(1, 1, 1).to_i * TICKS_PER_SEC
-
-      def self.ticks_to_time(ticks)
-        if ticks.kind_of? Numeric
-          Time.at(Rational(ticks - EPOCH_TO_TICKS, TICKS_PER_SEC))
-        else
-          ticks
-        end
-      end
-
-      def self.time_to_ticks(time)
-        if time.kind_of? Numeric
-          time.to_i
-        else
-          EPOCH_TO_TICKS + (time.to_r * TICKS_PER_SEC).to_i
         end
       end
     end
