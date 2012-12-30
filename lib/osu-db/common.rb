@@ -1,5 +1,6 @@
 require 'stringio'
 require 'osu-db/mods'
+require 'osu-db/timing_point'
 require 'osu-db/timeutil'
 
 module Osu
@@ -17,6 +18,10 @@ module Osu
 
       def read_int(bytesize)
         unpack(bytesize, "C#{bytesize}").reverse.inject{|h, l| h << 8 | l}
+      end
+
+      def read_double
+        unpack(8, 'E')
       end
 
       def read_bool
