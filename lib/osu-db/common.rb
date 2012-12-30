@@ -32,7 +32,7 @@ module Osu
         ret, off = 0, 0
         loop do
           byte = read_int(1)
-          ret |= byte << off
+          ret |= (byte & 0x7F) << off
           off += 7
           break if byte & 0x80 == 0
         end
