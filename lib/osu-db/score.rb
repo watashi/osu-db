@@ -7,6 +7,10 @@ module Osu
                   :x300, :x100, :x50, :geki, :katsu, :misses,
                   :score, :combo, :perfect, :mods, :datetime, :dummy, :scoreid
 
+      def initialize(ios = nil)
+        load(ios) if ios
+      end
+
       def load(ios)
         @flag = ios.read_int(1)
         ios.read_version

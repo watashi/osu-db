@@ -17,9 +17,7 @@ module Osu
           beatmapcode = ios.read_str
           m = ios.read_int(4)
           m.times do
-            score = Score.new
-            score.load(ios)
-            @scores[beatmapcode] <<= score
+            @scores[beatmapcode] <<= Score.new(ios)
           end
         end
       end
