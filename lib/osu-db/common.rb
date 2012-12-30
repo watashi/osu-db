@@ -39,6 +39,11 @@ module Osu
         ret
       end
 
+      def read_time
+        ticks = read_int(8)
+        ticks == 0 ? nil : TimeUtil.ticks_to_time(ticks)
+      end
+
       def read_str
         tag = read_int(1)
         if tag == 0
