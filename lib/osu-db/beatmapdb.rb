@@ -1,9 +1,15 @@
+require 'forwardable'
 require 'osu-db/common'
 require 'osu-db/beatmap'
 
 module Osu
   module DB
     class BeatmapDB
+      include Enumerable
+      extend Forwardable
+
+      def_delegators :beatmaps, :each
+
       attr_reader :beatmaps
 
       def load(str)
