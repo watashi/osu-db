@@ -21,7 +21,7 @@ module Osu
       end
 
       def read_double
-        unpack(8, 'E')
+        unpack(8, 'E')[0]
       end
 
       def read_bool
