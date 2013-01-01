@@ -11,20 +11,20 @@ module Osu
       alias :full_combo  :perfect
       alias :full_combo? :full_combo
 
-      # Catch The Beat
-      alias :droplet_miss :katsu
-
-      # osu!mania
-      alias :max  :geki
-      alias :x200 :katsu
-      alias :miss :misses
-
-      def initialize(ios = nil)
+      def initialize(game_mode, ios = nil)
+        @game_mode = game_mode
         load(ios) if ios
       end
 
+      def accuracy
+        raise NotImplementedError
+      end
+
+      def grade
+        raise NotImplementedError
+      end
+
       def load(ios)
-        @game_mode = GameMode[ios.read_int(1)]
         ios.read_version
 
         @beatmapcode = ios.read_str
@@ -37,9 +37,29 @@ module Osu
         @perfect = ios.read_bool
         @mods = Mods.new(ios.read_int(5))
         @datetime = ios.read_time
-        @dummy = ios.read_int(4)      # always = 0xFFFFFFFF
+        @dummy = ios.read_int(4)              # TODO: always = 0xFFFFFFFF
         @scoreid = ios.read_int(4)
       end
+    end
+
+    # Standard Mode
+    class OsuScore < Score
+    end
+
+    # Taiko Mode
+    class TaikoScore < Score
+    end
+
+    # Catch The Beat Mode
+    class CTBScore < Score
+      alias :droplet_miss :katsu
+    end
+
+    # osu!mania Mode
+    class ManiaScore < Score
+      alias :max  :geki
+      alias :x200 :katsu
+      alias :miss :misses
     end
   end
 end

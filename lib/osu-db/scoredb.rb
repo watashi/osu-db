@@ -6,6 +6,13 @@ module Osu
     class ScoreDB
       include Enumerable
 
+      GameModeScore = {
+        :osu!         => OsuScore,
+        :Taiko        => TaikoScore,
+        :CatchTheBeat => CTBScore,
+        :'osu!mania'  => ManiaScore
+      }
+
       attr_reader :scores
 
       def each
@@ -27,7 +34,13 @@ module Osu
           beatmapcode = ios.read_str
           m = ios.read_int(4)
           m.times do
-            @scores[beatmapcode] <<= Score.new(ios)
+            game_mode = GameMode[ios.read_int 1]
+            if game_mode && GameModeScore[game_mode]
+              score = GameModeScore[game_mode].new(game_mode, ios)
+            else
+              score = Score.new(game_mode, ios)
+            end
+            @scores[beatmapcode] <<= score
           end
         end
       end
