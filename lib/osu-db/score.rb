@@ -7,6 +7,10 @@ module Osu
                   :x300, :x100, :x50, :geki, :katsu, :misses,
                   :score, :combo, :perfect, :mods, :datetime, :dummy, :scoreid
 
+      alias :perfect?    :perfect
+      alias :full_combo  :perfect
+      alias :full_combo? :full_combo
+
       # Catch The Beat
       alias :droplet_miss :katsu
 
