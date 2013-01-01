@@ -27,6 +27,16 @@ module Osu
         unpack(bytesize, "C#{bytesize}").reverse.inject{|h, l| h << 8 | l}
       end
 
+      def read_signed_int(bytesize)
+        len = 8 * bytesize
+        ret = read_int(bytesize)
+        ret[len - 1] == 0 ? ret : ret - (1 << len)
+      end
+
+      def read_float
+        unpack(4, 'e')[0]
+      end
+
       def read_double
         unpack(8, 'E')[0]
       end

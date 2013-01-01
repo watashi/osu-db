@@ -7,10 +7,14 @@ module Osu
                   :version, :audio_filename, :beatmapcode, :osu_filename,
                   :type, :circles, :sliders, :spinners, :last_edit,
                   :approach_rate, :circle_size, :hp_drain_rate,
-                  :overall_difficulty, :slider_multiplier, :unknown1,
+                  :overall_difficulty, :slider_multiplier,
+                  :draining_time, :total_time, :preview_time,
                   :timing_points, :beatmapid, :beatmapsetid, :threadid,
-                  :unknown2, :source, :tags, :unknown3, :style, :flag,
-                  :last_play, :zero1, :path, :zero2, :last_sync, :unknown4
+                  :ratings, :zero16, :stack_leniency, :mode,
+                  :source, :tags, :unknown, :letterbox, :played,
+                  :last_play, :zero8, :path, :last_sync, :options
+
+      alias :played? :played
 
       def initialize(ios = nil)
         load(ios) if ios
@@ -21,7 +25,7 @@ module Osu
       end
 
       def osu_path
-        "#{path}\\#{audio_filename}"
+        "#{path}\\#{osu_filename}"
       end
 
       def load(ios)
@@ -37,13 +41,16 @@ module Osu
 
         # {0: ??, 2: :pending, 4: :ranked, 5: :approved}
         @type = ios.read_int 1
-        @circles, @slides, @spinners = *ios.unpack(6, 'V*')
+        @circles, @sliders, @spinners = *ios.unpack(6, 'v*')
         @last_edit = ios.read_time
         # approach_rate(??) might be different from that in .osu
         @approach_rate, @circle_size, @hp_drain_rate, @overall_difficulty =
           *ios.unpack(4, 'C*')
-        @slider_multiplier  = ios.read_double
-        @unknown1 = ios.read 12             # ?
+        @slider_multiplier = ios.read_double
+        # total_time = offset of last hit object
+        @draining_time, @total_time, @preview_time = *ios.unpack(12, 'V*')
+        # PreviewTime: -1
+        @preview_time = nil if @preview_time == 0xFFFFFFFF
 
         n = ios.read_int 4
         @timing_points = Array.new(n) do
@@ -56,19 +63,33 @@ module Osu
         @beatmapid      = ios.read_int 4
         @beatmapsetid   = ios.read_int 4
         @threadid       = ios.read_int 4
-        @unknown2       = ios.read 11       # ?
+        @ratings        = ios.unpack(4, 'C*')
+        @zero16         = ios.read_int 2          # ?, =0
+        @stack_leniency = ios.read_float
+        @mode           = GameMode[ios.read_int 1]
         @source         = ios.read_str
         @tags           = ios.read_str
-        @unknown3       = ios.read 2        # ?
-        @style          = ios.read_str      # ?
+        @unknown        = ios.read_signed_int 2   # ?, almost=0, or close to 0
 
-        @flag           = ios.read_int 1    # ?
-        @last_play      = ios.read_time     # ?
-        @zero1          = ios.read_bool     # ?
+        # if letterbox_in_break?
+        #   @letterbox = "[bold:0,size:20]%s\n%s" %
+        #     [@title_unicode || @title, @artist_unicode || @artist]
+        # else
+        #   @letterbox = ''
+        # end
+        @letterbox      = ios.read_str
+
+        @played         = !ios.read_bool
+        @last_play      = ios.read_time
+        # if !@played && @last_play != nil
+        #   raise DBCorruptError, "played=%s doesn't match last_play=%s" %
+        #     [@played, @last_play].map{|i| i.inspect}
+        # end
+
+        @zero8          = ios.read_int 1          # ?, =0
         @path           = ios.read_str
-        @last_sync      = ios.read_time     # ?
-        @zero2          = ios.read_bool     # ?
-        @unknown4       = ios.read 9        # ?
+        @last_sync      = ios.read_time
+        @options        = ios.read 10             # ?, option per beatmap?
       end
     end
   end
