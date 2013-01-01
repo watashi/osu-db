@@ -18,7 +18,19 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+    require 'osu-db'
+
+    beatmapdb = Osu::DB::BeatmapDB.new
+    beatmapdb.load(IO.read('osu!.db'))
+    beatmaps = beatmapdb.select{|i| i.mode == :CatchTheBeat}.map{|i| i.beatmapcode}
+
+    scoredb = Osu::DB::ScoreDB.new
+    scoredb.load(IO.read('scores.db'))
+    scores = scoredb.select{|i| beatmaps.include? i.beatmapcode}
+
+    scores.sort{|i, j| i.datetime <=> j.datetime}.each do |i|
+      puts "%10s %7d %3d  %s" % [i.user, i.score, i.combo, i.mods]
+    end
 
 ## Contributing
 
