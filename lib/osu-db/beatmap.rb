@@ -12,9 +12,14 @@ module Osu
                   :timing_points, :beatmapid, :beatmapsetid, :threadid,
                   :ratings, :your_offset, :stack_leniency, :mode,
                   :source, :tags, :online_offset, :letterbox, :played,
-                  :last_play, :zero8, :path, :last_sync, :options
+                  :last_play, :zero8, :path, :last_sync,
+                  :ignore_hitsound, :ignore_skin, :disable_storyboard,
+                  :background_dim, :unknown
 
-      alias :played? :played
+      alias :played?             :played
+      alias :ignore_hitsound?    :ignore_hitsound
+      alias :ignore_skin?        :ignore_skin
+      alias :disable_storyboard? :disable_storyboard
 
       def initialize(ios = nil)
         load(ios) if ios
@@ -76,19 +81,25 @@ module Osu
         # else
         #   @letterbox = ''
         # end
-        @letterbox      = ios.read_str
+        @letterbox = ios.read_str
 
-        @played         = !ios.read_bool
-        @last_play      = ios.read_time
+        @played    = !ios.read_bool
+        @last_play = ios.read_time
         # if !@played && @last_play != nil
         #   raise DBCorruptError, "played=%s doesn't match last_play=%s" %
         #     [@played, @last_play].map{|i| i.inspect}
         # end
 
-        @zero8          = ios.read_int 1          # ?, =0
-        @path           = ios.read_str
-        @last_sync      = ios.read_time
-        @options        = ios.read 10             # ?, option per beatmap?
+        @zero8     = ios.read_int 1           # TODO: =0
+        @path      = ios.read_str
+        @last_sync = ios.read_time
+
+        @ignore_hitsound    = ios.read_bool
+        @ignore_skin        = ios.read_bool
+        @disable_storyboard = ios.read_bool
+        @background_dim     = ios.read_int 1
+        # @disable_video is not saved
+        @unknown            = ios.read 6      # TODO:
       end
     end
   end
