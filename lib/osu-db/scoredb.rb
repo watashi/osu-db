@@ -1,4 +1,3 @@
-require 'forwardable'
 require 'osu-db/common'
 require 'osu-db/score'
 
@@ -6,11 +5,16 @@ module Osu
   module DB
     class ScoreDB
       include Enumerable
-      extend Forwardable
-
-      def_delegators :scores, :each
 
       attr_reader :scores
+
+      def each
+        scores.each do |_, v|
+          v.each do |score|
+            yield score
+          end
+        end
+      end
 
       def load(str)
         ios = StringIO.new(str, "rb")
