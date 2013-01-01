@@ -10,8 +10,8 @@ module Osu
                   :overall_difficulty, :slider_multiplier,
                   :draining_time, :total_time, :preview_time,
                   :timing_points, :beatmapid, :beatmapsetid, :threadid,
-                  :ratings, :zero16, :stack_leniency, :mode,
-                  :source, :tags, :unknown, :letterbox, :played,
+                  :ratings, :your_offset, :stack_leniency, :mode,
+                  :source, :tags, :online_offset, :letterbox, :played,
                   :last_play, :zero8, :path, :last_sync, :options
 
       alias :played? :played
@@ -64,12 +64,12 @@ module Osu
         @beatmapsetid   = ios.read_int 4
         @threadid       = ios.read_int 4
         @ratings        = ios.unpack(4, 'C*')
-        @zero16         = ios.read_int 2          # ?, =0
+        @your_offset    = ios.read_signed_int 2
         @stack_leniency = ios.read_float
         @mode           = GameMode[ios.read_int 1]
         @source         = ios.read_str
         @tags           = ios.read_str
-        @unknown        = ios.read_signed_int 2   # ?, almost=0, or close to 0
+        @online_offset  = ios.read_signed_int 2
 
         # if letterbox_in_break?
         #   @letterbox = "[bold:0,size:20]%s\n%s" %
