@@ -11,10 +11,10 @@ module Osu
                   :draining_time, :total_time, :preview_time,
                   :timing_points, :beatmapid, :beatmapsetid, :threadid,
                   :ratings, :your_offset, :stack_leniency, :mode,
-                  :source, :tags, :online_offset, :letterbox, :played,
-                  :last_play, :zero8, :path, :last_sync,
+                  :source, :tags, :online_offset, :letterbox,
+                  :played, :last_play, :zero1, :path, :last_sync,
                   :ignore_hitsound, :ignore_skin, :disable_storyboard,
-                  :background_dim, :unknown
+                  :background_dim, :zero2, :int1, :int2
 
       alias :played?             :played
       alias :ignore_hitsound?    :ignore_hitsound
@@ -90,7 +90,8 @@ module Osu
         #     [@played, @last_play].map{|i| i.inspect}
         # end
 
-        @zero8     = ios.read_int 1           # TODO: =0
+        @zero1     = ios.read_int 1           # TODO: =0
+        raise if @zero1 != 0
         @path      = ios.read_str
         @last_sync = ios.read_time
 
@@ -99,7 +100,12 @@ module Osu
         @disable_storyboard = ios.read_bool
         @background_dim     = ios.read_int 1
         # @disable_video is not saved
-        @unknown            = ios.read 6      # TODO:
+
+        @zero2     = ios.read_int 1           # TODO: =0
+        raise if @zero2 != 0
+        @int1      = ios.read_int 4           # TODO: almost=0
+        @int2      = ios.read_int 1           # TODO: almost=0, otherwise=7
+        raise unless @int2 == 0 || @int2 == 7 # 0 iff original mode only
       end
     end
   end
