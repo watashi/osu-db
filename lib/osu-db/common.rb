@@ -5,6 +5,13 @@ require 'osu-db/timeutil'
 
 module Osu
   module DB
+    BeatmapType = {
+      0 => :ToBeDecided,  # Type info is out of date
+      2 => :Pending,
+      4 => :Ranked,
+      5 => :Approved
+    }
+
     GameMode = [
       :osu!,
       :Taiko,

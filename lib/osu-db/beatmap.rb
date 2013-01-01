@@ -39,8 +39,7 @@ module Osu
         @beatmapcode    = ios.read_str
         @osu_filename   = ios.read_str
 
-        # {0: ??, 2: :pending, 4: :ranked, 5: :approved}
-        @type = ios.read_int 1
+        @type = BeatmapType[ios.read_int 1]
         @circles, @sliders, @spinners = *ios.unpack(6, 'v*')
         @last_edit = ios.read_time
         # approach_rate(??) might be different from that in .osu
