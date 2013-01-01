@@ -5,6 +5,13 @@ require 'osu-db/timeutil'
 
 module Osu
   module DB
+    GameMode = [
+      :osu!,
+      :Taiko,
+      :CatchTheBeat,
+      :'osu!mania'
+    ]
+
     class UnsupportedVersionError < RuntimeError
     end
 
