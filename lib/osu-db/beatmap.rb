@@ -80,11 +80,11 @@ module Osu
       end
 
       def audio_path
-        "#{path}\\#{audio_filename}"
+        "#{path}\\#{audio_filename}".gsub('\\', File::SEPARATOR)
       end
 
       def osu_path
-        "#{path}\\#{osu_filename}"
+        "#{path}\\#{osu_filename}".gsub('\\', File::SEPARATOR)
       end
 
       def beatmap_url
