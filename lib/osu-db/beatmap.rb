@@ -2,6 +2,60 @@ require 'osu-db/common'
 
 module Osu
   module DB
+=begin rdoc
+== Structure of osu!.db
+* *str*[rdoc-ref:StringIO#read_str]
+  #artist, #artist_unicode, #title, #title_unicode, #creator, #version:
+  metadata section in .osu
+* *str*[rdoc-ref:StringIO#read_str] #audio_filename: general section in .osu
+* *str*[rdoc-ref:StringIO#read_str] #beatmapcode: digest of Beatmap
+* *str*[rdoc-ref:StringIO#read_str] #osu_filename:
+* *int*[rdoc-ref:StringIO#read_int] #type:
+  see BeatmapType[rdoc-ref:Osu::DB]
+* *int*[rdoc-ref:StringIO#read_int] #circles, #sliders, #spinners:
+  the number of circles, sliders and spinners
+* *time*[rdoc-ref:StringIO#read_time] #last_edit:
+* *int*[rdoc-ref:StringIO#read_int]
+  #approach_rate, #circle_size, #hp_drain_rate, #overall_difficulty:
+  difficulty section in .osu
+* *double*[rdoc-ref:StringIO#read_double] #slider_multiplier:
+  difficulty section in .osu
+* *int*[rdoc-ref:StringIO#read_int] #draining_time:
+  or play time, in second
+* *int*[rdoc-ref:StringIO#read_int] #total_time:
+  the offset of the last hit object, in millisecond
+* *int*[rdoc-ref:StringIO#read_int] #preview_time:
+  general section in .osu, in millisecond
+* *TimingPoint* #timing_points: timing points section in .osu
+* *int*[rdoc-ref:StringIO#read_int] #beatmapid, #beatmapsetid, #threadid:
+  metadata section in .osu
+* *int*[rdoc-ref:StringIO#read_int] #ratings:
+  user ratings for different GameMode[rdoc-ref:Osu::DB]
+* *int*[rdoc-ref:StringIO#read_int] #your_offset:
+* *float*[rdoc-ref:StringIO#read_float] #stack_leniency:
+  general section in .osu
+* *int*[rdoc-ref:StringIO#read_int] #mode:
+  see GameMode[rdoc-ref:Osu::DB]
+* *str*[rdoc-ref:StringIO#read_str] #source, #tags:
+  metadata section in .osu
+* *str*[rdoc-ref:StringIO#read_int] #online_offset:
+* *str*[rdoc-ref:StringIO#read_str] #letterbox:
+  general section in .osu
+* *bool*[rdoc-ref:StringIO#read_bool] #played?:
+* *time*[rdoc-ref:StringIO#read_time] #last_play:
+* _0_
+* *str*[rdoc-ref:StringIO#read_str] #path:
+  beatmap directory
+* *time*[rdoc-ref:StringIO#read_time] #last_sync:
+* *bool*[rdoc-ref:StringIO#read_bool]
+  #ignore_hitsound?, #ignore_skin?, #disable_storyboard?:
+  visual settings
+* *int*[rdoc-ref:StringIO#read_int] #background_dim:
+  visual settings
+* _0_
+* _unknown_
+* _0|7_
+=end
     class Beatmap
       attr_reader :artist, :artist_unicode, :title, :title_unicode, :creator,
                   :version, :audio_filename, :beatmapcode, :osu_filename,
@@ -33,6 +87,18 @@ module Osu
         "#{path}\\#{osu_filename}"
       end
 
+      def beatmap_url
+        "http://osu.ppy.sh/b/#{beatmapid}"
+      end
+
+      def beatmapset_url
+        "http://osu.ppy.sh/s/#{beatmapsetid}"
+      end
+
+      def thread_url
+        "http://osu.ppy.sh/forum/t/#{threadid}"
+      end
+
       def load(ios)
         @artist         = ios.read_str
         @artist_unicode = ios.read_str
@@ -51,7 +117,6 @@ module Osu
         @approach_rate, @circle_size, @hp_drain_rate, @overall_difficulty =
           *ios.unpack(4, 'C*')
         @slider_multiplier = ios.read_double
-        # total_time = offset of last hit object
         @draining_time, @total_time, @preview_time = *ios.unpack(12, 'V*')
         # PreviewTime: -1
         @preview_time = nil if @preview_time == 0xFFFFFFFF
@@ -75,12 +140,7 @@ module Osu
         @tags           = ios.read_str
         @online_offset  = ios.read_signed_int 2
 
-        # if letterbox_in_break?
-        #   @letterbox = "[bold:0,size:20]%s\n%s" %
-        #     [@title_unicode || @title, @artist_unicode || @artist]
-        # else
-        #   @letterbox = ''
-        # end
+
         @letterbox = ios.read_str
 
         @played    = !ios.read_bool

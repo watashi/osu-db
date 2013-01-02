@@ -2,6 +2,27 @@ require 'osu-db/common'
 
 module Osu
   module DB
+=begin rdoc
+== Structure of scores.db
+* *str*[rdoc-ref:StringIO#read_str] #beatmapcode: digest of Beatmap
+* *str*[rdoc-ref:StringIO#read_str] #user: username
+* *str*[rdoc-ref:StringIO#read_str] #scorecode: digest of Score
+* *int*[rdoc-ref:StringIO#read_int] #x300, #x100, #x50:
+  the number of 300s, 100s and 50s
+* *int*[rdoc-ref:StringIO#read_int] #geki, #katsu, #miss:
+  these attributes may have different meaning is special modes
+* *int*[rdoc-ref:StringIO#read_int] #score, #combo:
+  score and max combo
+* *bool*[rdoc-ref:StringIO#read_bool] #perfect?:
+  full combo or not
+* *bitset*[rdoc-ref:StringIO#read_int] #mods:
+  mods or game modifiers, see Mod and Mods
+* *time*[rdoc-ref:StringIO#read_time] #datetime:
+  played time
+* _0xFFFFFFFF_
+* *int*[rdoc-ref:StringIO#read_int] #scoreid:
+  score id
+=end
     class Score
       attr_reader :game_mode, :beatmapcode, :user, :scorecode,
                   :x300, :x100, :x50, :geki, :katsu, :miss,
@@ -46,7 +67,7 @@ module Osu
       end
     end
 
-    # Standard Mode
+    # Score of Standard Mode
     class OsuScore < Score
       def hits
         x300 + x100 + x50 + miss
@@ -73,7 +94,7 @@ module Osu
       end
     end
 
-    # Taiko Mode
+    # Score of Taiko Mode
     class TaikoScore < Score
       alias :great :x300
       alias :good  :x100
@@ -103,7 +124,7 @@ module Osu
       end
     end
 
-    # Catch The Beat Mode
+    # Score of Catch The Beat Mode
     class CTBScore < Score
       alias :droplet_miss :katsu
 
@@ -124,7 +145,7 @@ module Osu
       end
     end
 
-    # osu!mania Mode
+    # Score of osu!mania Mode
     class ManiaScore < Score
       alias :max  :geki
       alias :x200 :katsu

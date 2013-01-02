@@ -6,7 +6,7 @@ module Osu
     class ScoreDB
       include Enumerable
 
-      GameModeScore = {
+      @@game_mode_score = {
         :osu!         => OsuScore,
         :Taiko        => TaikoScore,
         :CatchTheBeat => CTBScore,
@@ -35,8 +35,8 @@ module Osu
           m = ios.read_int(4)
           m.times do
             game_mode = GameMode[ios.read_int 1]
-            if game_mode && GameModeScore[game_mode]
-              score = GameModeScore[game_mode].new(game_mode, ios)
+            if game_mode && @@game_mode_score[game_mode]
+              score = @@game_mode_score[game_mode].new(game_mode, ios)
             else
               score = Score.new(game_mode, ios)
             end

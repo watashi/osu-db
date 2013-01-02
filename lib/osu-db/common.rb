@@ -1,10 +1,16 @@
 require 'stringio'
 require 'osu-db/mods'
-require 'osu-db/timing_point'
 require 'osu-db/timeutil'
+require 'osu-db/timing_point'
 
 module Osu
   module DB
+    # There are mainly three different beatmap types:
+    # +:Ranked+:: beatmap with a heart icon
+    # +:Approved+:: beatmap with a flame icon
+    # +:Pending+:: others, including pending, mod requests and graveyard
+    # There is also a special type:
+    # +:ToBeDecided+:: the type information in osu!.db is out of date
     BeatmapType = {
       0 => :ToBeDecided,  # Type info is out of date
       2 => :Pending,
@@ -12,6 +18,11 @@ module Osu
       5 => :Approved
     }
 
+    # There are four game modes in osu!:
+    # +:osu!+:: http://osu.ppy.sh/wiki/Standard
+    # +:Taiko+:: http://osu.ppy.sh/wiki/Taiko
+    # +:CatchTheBeat+:: http://osu.ppy.sh/wiki/Catch_The_Beat
+    # <tt>:'osu!mania'</tt>:: http://osu.ppy.sh/wiki/Osu!mania
     GameMode = [
       :osu!,
       :Taiko,
