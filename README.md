@@ -18,19 +18,36 @@ Or install it yourself as:
 
 ## Usage
 
+Load datebase
+
     require 'osu-db'
 
     beatmapdb = Osu::DB::BeatmapDB.new
     beatmapdb.load(IO.read('osu!.db'))
-    beatmaps = beatmapdb.select{|i| i.mode == :CatchTheBeat}.map{|i| i.beatmapcode}
 
     scoredb = Osu::DB::ScoreDB.new
     scoredb.load(IO.read('scores.db'))
-    scores = scoredb.select{|i| beatmaps.include? i.beatmapcode}
 
+Let's have fun with touhou music
+
+    beatmapdb.select{|i| i.source =~ /touhou/i}.shuffle.each do |i|
+      puts "#{i.artist_unicode || i.artist} - #{i.title_unicode || i.title}"
+      `mplayer "#{i.audio_path}" 2>&1 >/dev/null`
+    end
+
+Calculate the average accuracy
+
+    scores = scoredb.select{|i| i.game_mode == :osu!}
+    p scores.inject(0){|i, j| i + j.accuracy} / scores.size
+
+Print all taiko scores
+
+    beatmaps = beatmapdb.select{|i| i.mode == :Taiko}.map(&:beatmapcode)
+    scores = scoredb.select{|i| beatmaps.include? i.beatmapcode}
     scores.sort{|i, j| i.datetime <=> j.datetime}.each do |i|
       puts "%10s %7d %3d  %s" % [i.user, i.score, i.combo, i.mods]
     end
+
 
 ## Contributing
 
