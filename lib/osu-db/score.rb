@@ -16,6 +16,10 @@ module Osu
         load(ios) if ios
       end
 
+      def hits
+        raise NotImplementedError
+      end
+
       def accuracy
         raise NotImplementedError
       end
@@ -44,6 +48,29 @@ module Osu
 
     # Standard Mode
     class OsuScore < Score
+      def hits
+        x300 + x100 + x50 + misses
+      end
+
+      def accuracy
+        (300 * x300 + 100 * x100 + 50 * x50) / (300.0 * hits)
+      end
+
+      def grade
+        if x300 == hits
+          :SS # SS = 100% accuracy
+        elsif 10 * x300 > 9 * hits && 100 * x50 < hits && misses == 0
+          :S  # S = Over 90% 300s, less than 1% 50s and no misses.
+        elsif 10 * x300 > 8 * hits && misses == 0 || 10 * x300 > 9 * hits
+          :A  # A = Over 80% 300s and no misses OR over 90% 300s.
+        elsif 10 * x300 > 7 * hits && misses == 0 || 10 * x300 > 8 * hits
+          :B  # B = Over 70% 300s and no misses OR over 80% 300s.
+        elsif 10 * x300 > 6 * hits
+          :C  # C = Over 60% 300s.
+        else
+          :D
+        end
+      end
     end
 
     # Taiko Mode
