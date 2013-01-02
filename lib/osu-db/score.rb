@@ -4,7 +4,7 @@ module Osu
   module DB
     class Score
       attr_reader :game_mode, :beatmapcode, :user, :scorecode,
-                  :x300, :x100, :x50, :geki, :katsu, :misses,
+                  :x300, :x100, :x50, :geki, :katsu, :miss,
                   :score, :combo, :perfect, :mods, :datetime, :dummy, :scoreid
 
       alias :perfect?    :perfect
@@ -35,7 +35,7 @@ module Osu
         @user = ios.read_str
 
         @scorecode = ios.read_str
-        @x300, @x100, @x50, @geki, @katsu, @misses = *ios.unpack(12, 'v6')
+        @x300, @x100, @x50, @geki, @katsu, @miss = *ios.unpack(12, 'v6')
         @score = ios.read_int(4)
         @combo = ios.read_int(2)
         @perfect = ios.read_bool
@@ -49,7 +49,7 @@ module Osu
     # Standard Mode
     class OsuScore < Score
       def hits
-        x300 + x100 + x50 + misses
+        x300 + x100 + x50 + miss
       end
 
       def accuracy
@@ -59,12 +59,12 @@ module Osu
       def grade
         if x300 == hits
           :SS # SS = 100% accuracy
-        elsif 10 * x300 > 9 * hits && 100 * x50 < hits && misses == 0
-          :S  # S = Over 90% 300s, less than 1% 50s and no misses.
-        elsif 10 * x300 > 8 * hits && misses == 0 || 10 * x300 > 9 * hits
-          :A  # A = Over 80% 300s and no misses OR over 90% 300s.
-        elsif 10 * x300 > 7 * hits && misses == 0 || 10 * x300 > 8 * hits
-          :B  # B = Over 70% 300s and no misses OR over 80% 300s.
+        elsif 10 * x300 > 9 * hits && 100 * x50 < hits && miss == 0
+          :S  # S = Over 90% 300s, less than 1% 50s and no miss.
+        elsif 10 * x300 > 8 * hits && miss == 0 || 10 * x300 > 9 * hits
+          :A  # A = Over 80% 300s and no miss OR over 90% 300s.
+        elsif 10 * x300 > 7 * hits && miss == 0 || 10 * x300 > 8 * hits
+          :B  # B = Over 70% 300s and no miss OR over 80% 300s.
         elsif 10 * x300 > 6 * hits
           :C  # C = Over 60% 300s.
         else
@@ -75,18 +75,75 @@ module Osu
 
     # Taiko Mode
     class TaikoScore < Score
+      alias :great :x300
+      alias :good  :x100
+
+      def hits
+        great + good + miss
+      end
+
+      def accuracy
+        (great + good * 0.5) / hits
+      end
+
+      def grade
+        if x300 == hits
+          :SS
+        elsif 10 * x300 > 9 * hits && miss == 0
+          :S
+        elsif 10 * x300 > 8 * hits && miss == 0 || 10 * x300 > 9 * hits
+          :A
+        elsif 10 * x300 > 7 * hits && miss == 0 || 10 * x300 > 8 * hits
+          :B
+        elsif 10 * x300 > 6 * hits
+          :C
+        else
+          :D
+        end
+      end
     end
 
     # Catch The Beat Mode
     class CTBScore < Score
       alias :droplet_miss :katsu
+
+      def hits
+        x300 + x100 + x50 + droplet_miss + miss
+      end
+
+      def accuracy
+        (x300 + x100 + x50).to_f / hits
+      end
+
+      def grade
+        acc = accuracy
+        [0.85, :D, 0.90, :C, 0.94, :B, 0.98, :A].each_slice(2) do |a, g|
+          return g if acc <= a
+        end
+        acc < 1 ? :S : :SS
+      end
     end
 
     # osu!mania Mode
     class ManiaScore < Score
       alias :max  :geki
       alias :x200 :katsu
-      alias :miss :misses
+
+      def hits
+        max + x300 + x200 + x100 + x50 + miss
+      end
+
+      def accuracy
+        (300 * (max + x300) + 200 * x200 + 100 * x100 + 50 * x50) / (300.0 * hits)
+      end
+
+      def grade
+        acc = accuracy
+        [0.70, :D, 0.80, :C, 0.90, :B, 0.95, :A].each_slice(2) do |a, g|
+          return g if acc <= a
+        end
+        acc < 1 ? :S : :SS
+      end
     end
   end
 end
