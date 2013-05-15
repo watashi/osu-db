@@ -97,7 +97,7 @@ module Osu
       end
 
       VERSION_MIN = 0x01330689
-      VERSION_MAX = 0x013329a1
+      VERSION_MAX = 0x01332ad1
 
       def read_version
         version = read_int(4)
